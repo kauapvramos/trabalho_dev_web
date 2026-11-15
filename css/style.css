@@ -1,0 +1,99 @@
+/* ===== Identidade visual da lanchonete ===== */
+:root {
+    --vermelho: #c0392b;
+    --vermelho-escuro: #962d22;
+    --mostarda: #f4b400;
+    --carvao: #2b2523;
+    --fundo: #f7f5f2;
+}
+
+body {
+    background-color: var(--fundo);
+    color: var(--carvao);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
+
+/* Menu */
+.menu-topo {
+    background-color: var(--carvao);
+    border-bottom: 4px solid var(--mostarda);
+}
+
+.marca {
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--mostarda) !important;
+}
+
+.link-menu.ativo {
+    color: var(--mostarda) !important;
+    font-weight: 600;
+}
+
+/* Títulos */
+.titulo-secao {
+    font-weight: 700;
+    border-left: 6px solid var(--vermelho);
+    padding-left: 12px;
+    margin-bottom: 8px;
+}
+
+/* Indicadores do dashboard */
+.card-indicador {
+    border: none;
+    border-top: 4px solid var(--mostarda);
+}
+
+.rotulo-indicador {
+    margin-bottom: 4px;
+    color: #6b6360;
+}
+
+.valor-indicador {
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+/* Botão principal (sobrescreve o visual do Bootstrap) */
+.btn-principal {
+    background-color: var(--vermelho);
+    border-color: var(--vermelho);
+    color: #fff;
+}
+
+.btn-principal:hover,
+.btn-principal:focus {
+    background-color: var(--vermelho-escuro);
+    border-color: var(--vermelho-escuro);
+    color: #fff;
+}
+
+/* Resumo do pedido */
+.resumo-total {
+    border-top: 2px dashed #d6d0cb;
+    padding-top: 12px;
+    text-align: right;
+}
+
+/* Rodapé */
+.rodape {
+    background-color: var(--carvao);
+    color: #cfc8c3;
+}
+
+/* Alertas flutuantes (feedback visual) */
+.area-alertas {
+    position: fixed;
+    top: 76px;
+    right: 16px;
+    z-index: 1080;
+    width: 340px;
+    max-width: calc(100% - 32px);
+}
