@@ -1,7 +1,7 @@
 // ===== CRUD de clientes =====
 
 let clientes = lerDados("clientes")
-let clienteEditandoId = null   // null = cadastrando; número = editando esse cliente
+let clienteEditandoId = 0   // 0 = cadastrando; outro número = editando esse cliente
 
 const formCliente = document.getElementById("formCliente")
 const campoClienteNome = document.getElementById("clienteNome")
@@ -11,76 +11,42 @@ const tabelaClientes = document.getElementById("tabelaClientes")
 const buscaCliente = document.getElementById("buscaCliente")
 const btnCancelarCliente = document.getElementById("btnCancelarCliente")
 
-// Valida os campos. Devolve true se estiver tudo certo.
-function validarCliente(nome, telefone) {
-    let valido = true
-    limparErros(formCliente)
 
-    if (nome.length < 3) {
-        marcarErro(campoClienteNome, "Informe o nome com pelo menos 3 letras.")
-        valido = false
-    }
-
-    // Tira tudo que não é número e confere se tem DDD + telefone (10 ou 11 dígitos)
-    let digitos = telefone.replace(/\D/g, "")
-    if (digitos.length < 10 || digitos.length > 11) {
-        marcarErro(campoClienteTelefone, "Telefone inválido. Use DDD + número, ex.: (47) 90000-0000.")
-        valido = false
-    }
-
-    return valido
-}
-
-// Verifica se o cliente já fez algum pedido (regra de negócio da exclusão)
-function clienteTemPedidos(id) {
-    let pedidos = lerDados("pedidos")
-
-    for (let pedido of pedidos) {
-        if (pedido.clienteId === id) {
-            return true
-        }
-    }
-    return false
-}
-
-// Desenha a tabela de clientes (já aplicando a busca)
 function listarClientes() {
-    let termo = buscaCliente.value.trim().toLowerCase()
+    let busca = buscaCliente.value.toLowerCase()
     let html = ""
 
     for (let cliente of clientes) {
         let texto = (cliente.nome + " " + cliente.telefone).toLowerCase()
 
-        if (texto.includes(termo)) {
-            html += `
-                <tr>
-                    <td>${escapar(cliente.nome)}</td>
-                    <td>${escapar(cliente.telefone)}</td>
-                    <td>${escapar(cliente.endereco)}</td>
-                    <td class="text-end">
-                        <button class="btn btn-sm btn-outline-dark" data-acao="editar" data-id="${cliente.id}">Editar</button>
-                        <button class="btn btn-sm btn-outline-danger" data-acao="excluir" data-id="${cliente.id}">Excluir</button>
-                    </td>
-                </tr>`
+        if (texto.includes(busca)) {
+            html += "<tr>"
+            html += "<td>" + cliente.nome + "</td>"
+            html += "<td>" + cliente.telefone + "</td>"
+            html += "<td>" + cliente.endereco + "</td>"
+            html += '<td class="text-end">'
+            html += '<button class="btn btn-sm btn-outline-dark" onclick="editarCliente(' + cliente.id + ')">Editar</button> '
+            html += '<button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalExcluir" onclick="pedirExclusaoCliente(' + cliente.id + ')">Excluir</button>'
+            html += "</td>"
+            html += "</tr>"
         }
     }
 
     if (html === "") {
-        html = `<tr><td colspan="4" class="text-muted">Nenhum cliente encontrado.</td></tr>`
+        html = '<tr><td colspan="4" class="text-muted">Nenhum cliente encontrado.</td></tr>'
     }
     tabelaClientes.innerHTML = html
 }
 
 // Volta o formulário para o modo "cadastrar"
-function sairDaEdicaoCliente() {
-    clienteEditandoId = null
+function limparFormCliente() {
+    clienteEditandoId = 0
     formCliente.reset()
-    limparErros(formCliente)
     document.getElementById("tituloFormCliente").textContent = "Cadastrar cliente"
     btnCancelarCliente.classList.add("d-none")
 }
 
-// Preenche o formulário com os dados do cliente escolhido
+
 function editarCliente(id) {
     let cliente = buscarPorId(clientes, id)
 
@@ -91,40 +57,57 @@ function editarCliente(id) {
 
     document.getElementById("tituloFormCliente").textContent = "Editar cliente"
     btnCancelarCliente.classList.remove("d-none")
-    campoClienteNome.focus()
 }
 
-function excluirCliente(id) {
-    let cliente = buscarPorId(clientes, id)
 
-    if (clienteTemPedidos(id)) {
-        mostrarAlerta("Não é possível excluir: este cliente já tem pedidos.", "danger")
-        return
+function pedirExclusaoCliente(id) {
+    tipoExcluir = "cliente"
+    idExcluir = id
+}
+
+// Chamada quando o usuário confirma no modal
+function excluirCliente(id) {
+    // Regra: cliente que já tem pedido não pode ser excluído
+    for (let pedido of lerDados("pedidos")) {
+        if (pedido.clienteId === id) {
+            mostrarAlerta("Não é possível excluir: este cliente já tem pedidos.", "danger")
+            return
+        }
     }
 
-    confirmarExclusao("Deseja excluir o cliente " + cliente.nome + "?", function () {
-        clientes = clientes.filter(function (c) {
-            return c.id !== id
-        })
-        salvarDados("clientes", clientes)
-        listarClientes()
-        mostrarAlerta("Cliente excluído.", "success")
-    })
+    // Cria uma lista nova sem o cliente excluído
+    let novaLista = []
+    for (let cliente of clientes) {
+        if (cliente.id !== id) {
+            novaLista.push(cliente)
+        }
+    }
+    clientes = novaLista
+
+    salvarDados("clientes", clientes)
+    listarClientes()
+    mostrarAlerta("Cliente excluído.", "success")
 }
 
-// Salvar (cadastrar ou editar)
+// Botão "Salvar cliente"
 formCliente.addEventListener("submit", function (evento) {
-    evento.preventDefault()
+    evento.preventDefault()  
 
     let nome = campoClienteNome.value.trim()
     let telefone = campoClienteTelefone.value.trim()
     let endereco = campoClienteEndereco.value.trim()
 
-    if (!validarCliente(nome, telefone)) {
+  
+    if (nome.length < 3) {
+        mostrarAlerta("Informe o nome com pelo menos 3 letras.", "danger")
+        return
+    }
+    if (telefone.length < 10) {
+        mostrarAlerta("Informe o telefone com DDD, ex.: (47) 90000-0000.", "danger")
         return
     }
 
-    if (clienteEditandoId === null) {
+    if (clienteEditandoId === 0) {
         clientes.push({ id: gerarId(clientes), nome: nome, telefone: telefone, endereco: endereco })
         mostrarAlerta("Cliente cadastrado com sucesso!", "success")
     } else {
@@ -136,26 +119,11 @@ formCliente.addEventListener("submit", function (evento) {
     }
 
     salvarDados("clientes", clientes)
-    sairDaEdicaoCliente()
+    limparFormCliente()
     listarClientes()
 })
 
-// Cliques nos botões da tabela (um único listener para todos os botões)
-tabelaClientes.addEventListener("click", function (evento) {
-    let botao = evento.target.closest("button")
-    if (botao === null) {
-        return
-    }
-
-    let id = Number(botao.dataset.id)
-    if (botao.dataset.acao === "editar") {
-        editarCliente(id)
-    } else {
-        excluirCliente(id)
-    }
-})
-
 buscaCliente.addEventListener("input", listarClientes)
-btnCancelarCliente.addEventListener("click", sairDaEdicaoCliente)
+btnCancelarCliente.addEventListener("click", limparFormCliente)
 
 listarClientes()
