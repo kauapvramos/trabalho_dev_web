@@ -1,67 +1,28 @@
-// ===== Funções de interface (alertas, erros nos campos e modal) =====
+// ===== Alerta e modal de exclusão =====
 
-// Evita que texto digitado pelo usuário vire HTML dentro da tabela
-function escapar(texto) {
-    let div = document.createElement("div")
-    div.textContent = texto
-    return div.innerHTML
-}
-
-// Mostra um alerta do Bootstrap que some sozinho (tipo: success, danger, warning)
+// Mostra uma mensagem (tipo: success, danger ou warning) e apaga depois de 3 segundos
 function mostrarAlerta(mensagem, tipo) {
     let area = document.getElementById("alertas")
 
-    let alerta = document.createElement("div")
-    alerta.className = "alert alert-" + tipo + " alert-dismissible fade show"
-
-    let texto = document.createElement("span")
-    texto.textContent = mensagem
-
-    let fechar = document.createElement("button")
-    fechar.type = "button"
-    fechar.className = "btn-close"
-    fechar.setAttribute("data-bs-dismiss", "alert")
-
-    alerta.appendChild(texto)
-    alerta.appendChild(fechar)
-    area.appendChild(alerta)
+    area.innerHTML = '<div class="alert alert-' + tipo + '">' + mensagem + '</div>'
 
     setTimeout(function () {
-        alerta.remove()
-    }, 3500)
+        area.innerHTML = ""
+    }, 3000)
 }
 
-// Marca o campo como inválido e escreve a mensagem logo abaixo dele
-function marcarErro(campo, mensagem) {
-    campo.classList.add("is-invalid")
-    campo.nextElementSibling.textContent = mensagem
-}
+// O botão "Excluir" de cada tabela guarda aqui o que vai ser excluído
+// (o modal abre sozinho pelo data-bs-toggle do botão)
+let tipoExcluir = ""
+let idExcluir = 0
 
-// Tira todas as marcações de erro de um formulário
-function limparErros(formulario) {
-    let campos = formulario.querySelectorAll(".is-invalid")
-
-    for (let campo of campos) {
-        campo.classList.remove("is-invalid")
+// Botão "Excluir" do modal: chama a exclusão certa
+function confirmarExclusao() {
+    if (tipoExcluir === "cliente") {
+        excluirCliente(idExcluir)
+    } else if (tipoExcluir === "produto") {
+        excluirProduto(idExcluir)
+    } else if (tipoExcluir === "pedido") {
+        excluirPedido(idExcluir)
     }
 }
-
-// ----- Modal de confirmação de exclusão -----
-let acaoExclusao = null
-
-function confirmarExclusao(mensagem, aoConfirmar) {
-    document.getElementById("modalExcluirTexto").textContent = mensagem
-    acaoExclusao = aoConfirmar
-
-    let modal = bootstrap.Modal.getOrCreateInstance(document.getElementById("modalExcluir"))
-    modal.show()
-}
-
-document.getElementById("btnConfirmarExclusao").addEventListener("click", function () {
-    if (acaoExclusao !== null) {
-        acaoExclusao()
-    }
-    acaoExclusao = null
-
-    bootstrap.Modal.getInstance(document.getElementById("modalExcluir")).hide()
-})

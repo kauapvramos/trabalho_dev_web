@@ -1,10 +1,10 @@
-// ===== Funções de dados (localStorage) =====
-// O localStorage só guarda texto, então usamos JSON para converter.
+// ===== Dados no localStorage =====
+// O localStorage só guarda texto, por isso usamos JSON para converter a lista.
 
-// Se o estoque for menor ou igual a esse valor, o produto é de "estoque baixo"
+// Produto com estoque menor ou igual a esse valor é "estoque baixo"
 const LIMITE_ESTOQUE_BAIXO = 5
 
-// Lê uma lista salva (ex.: "clientes"). Se não existir, devolve lista vazia.
+// Lê uma lista salva. Se não existir nada ainda, devolve uma lista vazia.
 function lerDados(chave) {
     let texto = localStorage.getItem(chave)
 
@@ -14,12 +14,12 @@ function lerDados(chave) {
     return JSON.parse(texto)
 }
 
-// Salva a lista inteira no localStorage
+// Salva a lista no localStorage
 function salvarDados(chave, lista) {
     localStorage.setItem(chave, JSON.stringify(lista))
 }
 
-// Cria um id novo: o maior id da lista + 1
+// Novo id = maior id da lista + 1
 function gerarId(lista) {
     let maior = 0
 
@@ -31,7 +31,7 @@ function gerarId(lista) {
     return maior + 1
 }
 
-// Procura um item da lista pelo id
+// Procura um item da lista pelo id (devolve null se não achar)
 function buscarPorId(lista, id) {
     for (let item of lista) {
         if (item.id === id) {
@@ -41,7 +41,7 @@ function buscarPorId(lista, id) {
     return null
 }
 
-// Transforma 12.5 em "R$ 12,50"
+// 12.5 vira "R$ 12,50"
 function formatarMoeda(valor) {
-    return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+    return "R$ " + valor.toFixed(2).replace(".", ",")
 }
